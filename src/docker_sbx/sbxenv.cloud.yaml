@@ -1,0 +1,21 @@
+# Cloud variant of sbxenv.yaml. Run from this directory:
+#   sbx --cloud env plan ./sbxenv.cloud.yaml
+#   sbx --cloud env run -d --name demo-1 --ttl 8h --on-timeout stop ./sbxenv.cloud.yaml
+#
+# Same agent, kits, env and sizing as sbxenv.yaml, minus workspace and
+# additionalWorkspaces: a cloud sandbox cannot mount host directories.
+schemaVersion: "1"
+name: claude-custom-cloud
+agent: claude
+
+kits:
+  - ./kits/cloud-clis
+  - ./kits/zsh-shell
+
+env:
+  AWS_REGION: us-east-1
+  AWS_DEFAULT_REGION: us-east-1
+
+sandboxOptions:
+  cpus: 4
+  memory: 8g

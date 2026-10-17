@@ -1,0 +1,27 @@
+add_newline = false
+format = "$hostname$directory$git_branch$git_status$python$nodejs$character"
+
+[hostname]
+format = "[$hostname]($style):"
+style = "dimmed"
+
+[directory]
+format = "[$path]($style) "
+
+[git_branch]
+format = "[$branch]($style)"
+
+[git_status]
+format = "[$all_status$ahead_behind]($style) "
+
+[python]
+format = "[p$version]($style) "
+version_format = "${major}.${minor}"
+
+[nodejs]
+format = "[n$version]($style) "
+version_format = "${major}"
+
+[character]
+success_symbol = "[\\$](bold green)"
+error_symbol = "[\\$](bold red)"

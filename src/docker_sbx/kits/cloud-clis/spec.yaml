@@ -1,0 +1,57 @@
+# v2 mixin: adds the AWS CLI and Cloudflare CLI (wrangler) to the built-in
+# claude agent. The built-in agents are v2 kits, so the mixin must be v2 too.
+schemaVersion: "2"
+kind: mixin
+name: cloud-clis
+displayName: AWS and Cloudflare CLIs
+description: Installs AWS CLI v2 and wrangler, with the network access they need.
+requires:
+  agent: claude
+
+# Kit rules are per-sandbox and apply on top of the global preset
+# (sbx policy init balanced). Listing them here keeps the tools working
+# under Locked Down as well.
+permissions:
+  network:
+    allow:
+      # npm registry, for the wrangler install
+      - registry.npmjs.org:443
+      # AWS: global endpoints (including the awscli.amazonaws.com installer
+      # download), plus regional ones for the default region
+      - "*.amazonaws.com:443"
+      - "*.us-east-1.amazonaws.com:443"
+      # Cloudflare API and wrangler login
+      - api.cloudflare.com:443
+      - dash.cloudflare.com:443
+
+# The real token stays on the host. The proxy adds it to requests to
+# api.cloudflare.com; inside the sandbox the variable holds a placeholder.
+credentials:
+  - service: cloudflare
+    description: Cloudflare API token used by wrangler
+    apiKey:
+      name: CLOUDFLARE_API_TOKEN
+      proxyManaged: true
+      inject:
+        - domain: api.cloudflare.com
+          scheme: bearer
+
+setup:
+  install:
+    - description: Install AWS CLI v2
+      command: |
+        set -eu
+        command -v unzip >/dev/null || { apt-get update && apt-get install -y unzip; }
+        tmp="$(mktemp -d)"
+        curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "$tmp/awscli.zip"
+        unzip -q "$tmp/awscli.zip" -d "$tmp"
+        "$tmp/aws/install" --update
+        rm -rf "$tmp"
+    - description: Install the Cloudflare CLI (wrangler)
+      command: npm install -g wrangler
+
+agentInstructions:
+  content: |
+    The `aws` (AWS CLI v2) and `wrangler` (Cloudflare) CLIs are installed.
+    Wrangler authenticates through CLOUDFLARE_API_TOKEN; do not run
+    `wrangler login`.

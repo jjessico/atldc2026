@@ -1,0 +1,46 @@
+# Sandbox environment file. Run from this directory:
+#   sbx env plan    # preview
+#   sbx env run     # create if needed, then attach to Claude Code
+#   sbx env rm      # remove the sandbox and what this file provisioned
+#
+# This file stays outside every directory it mounts.
+schemaVersion: "1"
+name: claude-custom-vm
+agent: claude
+
+# Read-write: the directory Claude Code works in.
+workspace: ./sandbox_directories/sbx_rw
+
+# Read-only reference material.
+additionalWorkspaces:
+  - path: ./sandbox_directories/sbx_ro
+    readOnly: true
+
+# Local v2 mixins: the AWS CLI and wrangler, and zsh/oh-my-zsh/starship with tmux.
+kits:
+  - ./kits/cloud-clis
+  - ./kits/zsh-shell
+
+env:
+  AWS_REGION: us-east-1
+  AWS_DEFAULT_REGION: us-east-1
+
+sandboxOptions:
+  cpus: 4
+  memory: 8g
+
+# Network: there is no network field in this file. The base profile is the
+# global preset, set once per machine with `sbx policy init balanced`.
+# The kit above adds the per-sandbox allow rules its tools need.
+
+# Cloudflare token for the kit's `cloudflare` credential. Uncomment and pick
+# one source; avoid a literal `value` in a shared file.
+# secrets:
+#   cloudflare:
+#     ref: op://Private/Cloudflare/api-token
+#
+# bindings:
+#   cloudflare:
+#     apiKey:
+#       domains:
+#         - api.cloudflare.com

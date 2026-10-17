@@ -1,0 +1,39 @@
+# v2 mixin: zsh with oh-my-zsh, starship and tmux for the agent user.
+# The dotfiles live under files/home/ and are copied to /home/agent/ before
+# the install commands run.
+schemaVersion: "2"
+kind: mixin
+name: zsh-shell
+displayName: zsh, oh-my-zsh, starship and tmux
+description: Installs zsh, oh-my-zsh, starship and tmux, with a .zshrc and starship.toml.
+requires:
+  agent: claude
+
+permissions:
+  network:
+    allow:
+      # oh-my-zsh clone and the starship release download
+      - github.com:443
+      - "*.githubusercontent.com:443"
+
+setup:
+  install:
+    - description: Install zsh and tmux and make zsh the agent's login shell
+      command: |
+        set -eu
+        if ! command -v zsh >/dev/null || ! command -v tmux >/dev/null; then
+          apt-get update
+          apt-get install -y zsh tmux
+        fi
+        chsh -s "$(command -v zsh)" agent
+    - description: Install oh-my-zsh
+      user: "1000"
+      command: |
+        set -eu
+        [ -d /home/agent/.oh-my-zsh ] || git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git /home/agent/.oh-my-zsh
+    - description: Install starship
+      command: |
+        set -eu
+        curl -fsSL "https://github.com/starship/starship/releases/latest/download/starship-$(uname -m)-unknown-linux-musl.tar.gz" \
+          | tar -xz -C /usr/local/bin starship
+        chmod 0755 /usr/local/bin/starship
